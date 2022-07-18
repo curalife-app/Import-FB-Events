@@ -1,5 +1,5 @@
+var dateRangeInterval;
 document.addEventListener("turbo:load", () => {
-    let dateRangeInterval;
     updateDateRanges(168);
 
     $('#upload-file-settings-button').on('click', function() {
