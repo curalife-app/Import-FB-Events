@@ -130,7 +130,7 @@ class FacebookEventImportController extends Controller
         }
 
         if (!empty($orders)) {
-            return array_merge(['stuff' => [$createdAtMin, $createdAtMax, $importModeFacebook]], $this->sendFBEventsFromShopifyOrders($orders, $importModeFacebook));
+            return array_merge(['input' => [$createdAtMin, $createdAtMax, $importModeFacebook]], $this->sendFBEventsFromShopifyOrders($orders, $importModeFacebook));
         }
 
         return [

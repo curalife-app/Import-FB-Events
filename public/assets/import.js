@@ -11,14 +11,17 @@ document.addEventListener("turbo:load", () => {
     });
 
     $('#upload-events-file-btn').on('click', function(e) {
-        setProcessingStatus();
+
         let formData = new FormData();
 
         if ($("#import-file-csv")[0].files.length > 0) {
             formData.append("file", $("#import-file-csv")[0].files[0])
         } else {
+            $("#import-file-csv").addClass('error-input');
             return false;
         }
+
+        setProcessingStatus();
 
         for (const [key, value] of Object.entries(prepareEventFileData())) {
             formData.append(key, value);
@@ -64,6 +67,7 @@ document.addEventListener("turbo:load", () => {
     {
         $('#uploaded-results-imported, #uploaded-results-excluded').html('<span class="animate-flicker">Processing</span>');
         $('#upload-events-status').removeClass('error').text('');
+        $('input').removeClass('error-input').text('');
     }
 
     function updateDateRanges(period)
@@ -84,7 +88,7 @@ document.addEventListener("turbo:load", () => {
     function recalculateDateRanges(period)
     {
         $('#created_at_min').val(new Date(
-            Date.now() - period * 60 * 60 * 1000 
+            Date.now() - period * 60 * 60 * 1000
             + 60 * 1000 // 1 minute buffer for potential delays
         ).toISOString().split('.')[0]);
         $('#created_at_max').val(new Date().toISOString().split('.')[0]);

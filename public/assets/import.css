@@ -7,6 +7,10 @@ input[disabled="disabled"] {
     color: #919191 !important;
 }
 
+input.error-input {
+    border: 1px solid #ac1313;
+}
+
 .hidden {
     display: none;
 }

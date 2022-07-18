@@ -40,12 +40,13 @@ class PlatformProvider extends OrchidServiceProvider
                 ->icon('cloud-download')
                 ->url('/admin/api'),
 
+            /*
             Menu::make('Basic Elements')
                 ->title('Form controls')
                 ->icon('note')
                 ->route('platform.example.fields'),
 
-            /*Menu::make('Import Facebook Events')
+            Menu::make('Import Facebook Events')
                 ->icon('bar-chart')
                 ->title('Tools')
                 ->list([
