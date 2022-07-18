@@ -1,0 +1,52 @@
+.mw-25p {
+    max-width: 25%;
+    padding-right: 1.5rem;
+}
+
+input[disabled="disabled"] {
+    color: #919191 !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.text-super-muted {
+    opacity: 0.2;
+}
+
+.error {
+    color: #ac1313;
+}
+
+.event-status {
+    margin-left: 30px;
+    color: #039f8e;
+}
+
+@keyframes flickerAnimation {
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-o-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-moz-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+@-webkit-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    50%  { opacity:0; }
+    100% { opacity:1; }
+}
+.animate-flicker {
+    -webkit-animation: flickerAnimation 1.4s infinite;
+    -moz-animation: flickerAnimation 1.4s infinite;
+    -o-animation: flickerAnimation 1.4s infinite;
+    animation: flickerAnimation 1.4s infinite;
+}
