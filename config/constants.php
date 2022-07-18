@@ -2,7 +2,29 @@
 
 return [
 
+    /*
+    |--------------------------------------------------------------------------
+    | Maximum requests to make to Shopify in one call
+    |--------------------------------------------------------------------------
+    |
+    | Inversely proportionate to the limit of items returned in requests
+    | The more items are returned in one request - the less requests the system needs to make
+    |
+    */
+
     'request_limit_shopify' => 100,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Number of items to return in one Shopify request
+    |--------------------------------------------------------------------------
+    |
+    | Define how many items to receive in one Shopify request.
+    |
+    | Maximum number of items allowed by Shopify: 1000
+    |
+    */
+
     'order_limit_shopify' => 250,
 
     /*
@@ -37,7 +59,17 @@ return [
 
     'event_batch_limit_facebook' => 1000,
 
-
+    /*
+    |--------------------------------------------------------------------------
+    | String for oldest allowed event time to import
+    |--------------------------------------------------------------------------
+    |
+    | Facebook allows event times to go up to 7 days before the request time.
+    | The time string as 1 minute buffer for potential delays.
+    |
+    | Maximum oldest event time string: -7 days
+    |
+    */
 
     'oldest_event_time_string' => '-7 days +1 minute',
 

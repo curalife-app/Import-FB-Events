@@ -14,11 +14,11 @@
 FB Event Import System allow to import events into Facebook based on past orders in Shopify
 
 Built on 
-- [Laravel 8.x](https://laravel.com) - Web application framework
-- [Orchid 11.x](https://orchid.software/) - Open source laravel admin panel builder
-- [Laravel Shopify 1.6](https://github.com/clarity-tech/laravel-shopify) - Shopify API package for Laravel
-- [Facebook Business SDK for PHP 13.0.x](https://github.com/facebook/facebook-php-business-sdk) - Includes Facebook Conversions API 
-- [Laravel Log-to-DB 3.0.x](https://github.com/danielme85/laravel-log-to-db) - Log channel handler for DB
+* [Laravel 8.x](https://laravel.com) - Web application framework
+* [Orchid 11.x](https://orchid.software/) - Open source laravel admin panel builder
+* [Laravel Shopify 1.6](https://github.com/clarity-tech/laravel-shopify) - Shopify API package for Laravel
+* [Facebook Business SDK for PHP 13.0.x](https://github.com/facebook/facebook-php-business-sdk) - Includes Facebook Conversions API 
+* [Laravel Log-to-DB 3.0.x](https://github.com/danielme85/laravel-log-to-db) - Log channel handler for DB
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
