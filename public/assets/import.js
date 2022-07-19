@@ -1,5 +1,10 @@
 var dateRangeInterval;
-document.addEventListener("turbo:load", () => {
+
+document.addEventListener("turbo:load", main);
+$(document).ready(main);
+
+function main()
+{
     updateDateRanges(168);
 
     $('#upload-file-settings-button').on('click', function() {
@@ -8,6 +13,49 @@ document.addEventListener("turbo:load", () => {
 
     $('input[type="radio"][name="import-template-date-range"]').change(function() {
         updateDateRanges($(this).val());
+    });
+
+    $('.webhooks-toggle').click(function() {
+        let toggle = this;
+        let store = $(toggle).attr('data-store')
+        if (store) {
+            setWebhookStatus('', '', store, toggle);
+            if (toggle.checked) {
+                setWebhookStatus('Processing', 'processing', store, toggle);
+                $.post('/admin/webhooks/' + store + '/activate', { '_token': $('#csrf').val() })
+                    .done(function(response) {
+                        if (response && response.message && response.status) {
+                            setWebhookStatus(response.message, response.status, store, toggle);
+                        } else {
+                            setWebhookStatus('Webhook activated successfully.', 'success', store, toggle);
+                        }
+                        setTimeout(() => {
+                            setWebhookStatus('Active', 'success', store, toggle)
+                        }, 3000);
+                    })
+                    .fail(function(response) {
+                        setWebhookStatus('Error activating webhook.', 'error', store, toggle);
+                    });
+                console.log('webhook for store ' + store + ' turned on');
+            } else {
+                setWebhookStatus('Processing', 'processing', store, toggle);
+                $.post('/admin/webhooks/' + store + '/deactivate', { '_token': $('#csrf').val() })
+                    .done(function(response) {
+                        if (response && response.message && response.status) {
+                            setWebhookStatus(response.message, response.status, store, toggle);
+                        } else {
+                            setWebhookStatus('Webhook deactivated successfully.', 'success', store, toggle);
+                        }
+                        setTimeout(() => {
+                            setWebhookStatus('Inactive', '', store, toggle)
+                        }, 3000);
+                    })
+                    .fail(function(response) {
+                        setWebhookStatus('Error deactivating webhook.', 'error', store, toggle);
+                    });
+                console.log('webhook for store ' + store + ' turned off');
+            }
+        }
     });
 
     $('#upload-events-file-btn').on('click', function(e) {
@@ -42,13 +90,13 @@ document.addEventListener("turbo:load", () => {
             });
 
 
-       /* $.post('/admin/events/file?' + params, new FormData($('#import-file-form')[0]))//prepareEventFileData())
-            .done(function(response) {
-                processEventImportSuccess(response);
-            })
-            .fail(function(response) {
-                processEventImportFail(response);
-            });*/
+        /* $.post('/admin/events/file?' + params, new FormData($('#import-file-form')[0]))//prepareEventFileData())
+             .done(function(response) {
+                 processEventImportSuccess(response);
+             })
+             .fail(function(response) {
+                 processEventImportFail(response);
+             });*/
     });
 
     $('#upload-events-api-btn').on('click', function(e) {
@@ -62,6 +110,24 @@ document.addEventListener("turbo:load", () => {
                 processEventImportFail(response);
             });
     });
+
+    function setWebhookStatus(message, status, store, target) {
+        let box = '.webhook-status-' + store;
+        $(target).removeAttr('disabled');
+        $(box)
+            .removeClass('error')
+            .removeClass('animate-flicker')
+            .removeClass('success')
+            .text(message);
+        if (status == 'error') {
+            $(box).addClass('error');
+        } else if (status == 'success') {
+            $(box).addClass('success');
+        } else if (status == 'processing') {
+            $(box).addClass('animate-flicker');
+            $(target).attr('disabled', 'disabled');
+        }
+    }
 
     function setProcessingStatus()
     {
@@ -166,5 +232,4 @@ document.addEventListener("turbo:load", () => {
         }
     }
 
-    function importEvents(mode) {}
-});
+}

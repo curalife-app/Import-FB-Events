@@ -23,6 +23,19 @@
 
                 <div class="bg-white rounded shadow-sm p-4 py-4 d-flex flex-column">
 
+                    <p class="small mt-2 mb-0">
+                        Import orders directly from Shopify as <b>Purchase events</b> into Facebook.
+                        <br>
+                        Orders are collected using Shopify API within a specified date range.
+                        <br>
+                        Events are triggered via Facebook Conversions API with time matching the order time.
+                        <br>
+                        Event ID is set using Shopify order ID to allow deduplication.
+                    </p>
+                    <p class="small mt-2 mb-2">
+                        <i>Note: Facebook allows to send Purchase events up to 7 days old.</i>
+                    </p>
+
                     <div class="form-group">
                         <label for="radiobutton" class="text-wrap mt-2 form-label">
                             Predefined date range

@@ -37,6 +37,13 @@ Route::screen('/main', PlatformScreen::class)
 
 Route::get('upload', [FacebookEventImportController::class, 'renderUploadImportView']);
 Route::get('api', [FacebookEventImportController::class, 'renderApiImportView']);
+Route::get('webhooks', [FacebookEventImportController::class, 'renderWebhookControlView']);
+
+Route::middleware('route.validate')->group(function () {
+    Route::post('webhooks/{store}/activate', [FacebookEventImportController::class, 'addShopifyPaidOrderWebhook']);
+    Route::post('webhooks/{store}/deactivate', [FacebookEventImportController::class, 'removeShopifyPaidOrderWebhook']);
+});
+
 Route::post('events/file', [FacebookEventImportController::class, 'importEventsViaFile']);
 Route::post('events/api', [FacebookEventImportController::class, 'importEventsViaApi']);
 

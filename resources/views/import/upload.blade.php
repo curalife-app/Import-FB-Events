@@ -23,6 +23,16 @@
 
                 <div class="bg-white rounded shadow-sm p-4 py-4 d-flex flex-column">
 
+                    <p class="small mt-2 mb-0">
+                        Upload list of Shopify orders to import them as <b>Purchase events</b> into Facebook.
+                        <br>
+                        Files must be CSV and have at least two columns containing Shopify order ID and a key to identify the store.
+                        <br>
+                        Column indexes can be configured in upload settings below.
+                        <br>
+                        Event ID is set using Shopify order ID to allow deduplication.
+                    </p>
+
                     <div class="form-group mt-3">
                         <label for="field-raw-file-12d15c1636d67c83d07358db294a5c6dc3cb8878" class="form-label">CSV import file
 
@@ -45,6 +55,18 @@
                     </h6>
 
                     <div id="upload-file-settings" class="hidden">
+
+                        <p class="small mt-2 mb-0">
+                            Here you can configure how to detect columns in the uploaded file.
+                            <br>
+                            Order number is used to identify the store by checking if it contains correct identification key.
+                            <br>
+                            Identification is configured for each store separately.
+                        </p>
+                        <p class="small mt-2 mb-2">
+                            <i>Note: Column indexes start with 0.</i>
+                        </p>
+
 
                         <div class="form-group mt-3">
                             <label for="field-order-id-key-ce623721d8008cbaf50b483118575e59514655be" class="form-label">Order ID Field Index

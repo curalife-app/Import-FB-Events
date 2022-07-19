@@ -28,7 +28,12 @@ class PlatformProvider extends OrchidServiceProvider
     public function registerMainMenu(): array
     {
         return [
-            Menu::make('Upload data file')
+            Menu::make('Shopify Webhooks')
+                ->icon('energy')
+                ->title('LIVE Event Tracking')
+                ->url('/admin/webhooks'),
+
+            Menu::make('Upload Data File')
                 ->icon('share-alt')
                 ->url('/admin/upload')
                 ->title('Event Import Tools'),
@@ -41,10 +46,9 @@ class PlatformProvider extends OrchidServiceProvider
                 ->url('/admin/api'),
 
             /*
-            Menu::make('Basic Elements')
-                ->title('Form controls')
-                ->icon('note')
-                ->route('platform.example.fields'),
+            Menu::make('Advanced Elements')
+                ->icon('briefcase')
+                ->route('platform.example.advanced'),
 
             Menu::make('Import Facebook Events')
                 ->icon('bar-chart')

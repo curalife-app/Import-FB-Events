@@ -20,21 +20,61 @@ use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise;
 
+/**
+ * Class FacebookEventImportController
+ * @package App\Http\Controllers
+ */
 class FacebookEventImportController extends Controller
 {
+    /**
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function renderWebhookControlView()
+    {
+        $activeWebhooks = [];
+        foreach(config('services.shopify') as $store => $storeCredentials) {
+            $activeWebhooks[$store] = false;
+            $webhookResponse = $this->getShopifyWebhooks($store);
+            foreach($webhookResponse as $webhook) {
+                if ($webhook['topic'] == 'orders/paid') {
+                    $activeWebhooks[$store] = true;
+                }
+            }
+        }
+
+        return view('webhook.toggle', ['activeWebhooks' => $activeWebhooks]);
+    }
+
+    /**
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
     public function renderUploadImportView()
     {
         return view('import.upload');
     }
 
+    /**
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
     public function renderApiImportView()
     {
         return view('import.api');
     }
 
+    /**
+     * @param $store
+     */
+    public function enableWebhooks($store)
+    {
+
+    }
+
+    /**
+     * @param Request $request
+     * @return array|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     */
     public function importEventsViaFile(Request $request)
     {
-        //dd($request->file('file')->getContent());
         $orders = [];
         $ids = [];
 
@@ -52,8 +92,6 @@ class FacebookEventImportController extends Controller
         if (!empty($request->get('import_mode')) && in_array($request->get('import_mode'), ['batch', 'async'])) {
             $importModeFacebook = $request->get('import_mode');
         }
-
-        //$import = array_map('str_getcsv', file(storage_path() .'/import/p1_since_20220619.csv'));
 
         // Key map for the import CSV file
         $importKeys = [
@@ -100,6 +138,10 @@ class FacebookEventImportController extends Controller
         ];
     }
 
+    /**
+     * @param Request $request
+     * @return array|false[]|\Illuminate\Config\Repository[]|\Illuminate\Contracts\Foundation\Application[]|string[]
+     */
     public function importEventsViaApi(Request $request)
     {
         $orders = [];
@@ -141,6 +183,12 @@ class FacebookEventImportController extends Controller
         ];
     }
 
+    /**
+     * @param $orders
+     * @param $importModeFacebook
+     * @return array
+     * @throws \Throwable
+     */
     private function sendFBEventsFromShopifyOrders($orders, $importModeFacebook)
     {
         $result = [];
@@ -219,6 +267,11 @@ class FacebookEventImportController extends Controller
         ];
     }
 
+    /**
+     * @param $store
+     * @param Request $request
+     * @return array|\FacebookAds\Object\ServerSide\EventResponse
+     */
     public function listenShopifyOrderWebhook($store, Request $request)
     {
         $result = [];
@@ -240,6 +293,7 @@ class FacebookEventImportController extends Controller
         $events = $this->createEvents($data);
 
         try {
+            Api::init(null, null, config('services.facebook.access_token'), false);
             $result = $this->sendEvents($events);
             if (!empty($data['event_id']) && !empty($data['email'])) {
                 Log::notice('Event for order ' . $data['event_id']. ' from email ' . $data['email'] . ' on store '. $store . ' sent to Facebook.');
@@ -251,6 +305,10 @@ class FacebookEventImportController extends Controller
         return $result;
     }
 
+    /**
+     * @param $store
+     * @return array
+     */
     public function getShopifyWebhooks($store)
     {
         $response = [];
@@ -265,20 +323,94 @@ class FacebookEventImportController extends Controller
         return $response;
     }
 
+    /**
+     * @param $store
+     * @return array
+     */
     public function addShopifyPaidOrderWebhook($store)
     {
-        return $this->createShopifyWebhook([ 'webhook' => [
-            'topic' => 'orders/paid',
-            'address' => config('app.url') . '/api/' . $store . '/webhooks/order',
-            'format' => 'json'
-        ]], $this->getShopifyStoreConfig($store));
+        $output = [];
+        $webhooks = [];
+        $webhookFound = false;
+        $topic = 'orders/paid';
+
+        try {
+            $webhooks = $this->getShopifyWebhooks($store);
+        } catch(\Exception $e) {
+            $output['status'] = 'error';
+            $output['message'] = 'Error retrieving current webhooks.';
+            Log::error('Webhook enable: Error getting webhooks on store' . $store . ' - '. $e->getMessage());
+        }
+
+        foreach($webhooks as $webhook) {
+            if (!empty($webhook['id']) && $webhook['topic'] == $topic) {
+                $webhookFound = true;
+                Log::error('Webhook enable: Webhook with topic ' . $webhook['topic'] .' already exists with id '. $webhook['id']);
+            }
+        }
+
+        if (!$webhookFound) {
+            try {
+                $output = $this->createShopifyWebhook([ 'webhook' => [
+                    'topic' => 'orders/paid',
+                    'address' => config('app.url') . '/api/' . $store . '/webhooks/order',
+                    'format' => 'json'
+                ]], $this->getShopifyStoreConfig($store));
+                $output['status'] = 'success';
+                $output['message'] = 'Webhook activated successfully.';
+                Log::info('Webhook enable: ENABLED webhook ' .  $output['id'] . ' on store ' .  $store . ' with topic ' . $output['topic'] . '.');
+            } catch(\Exception $e) {
+                $output['status'] = 'error';
+                $output['message'] = 'Error activating webhook.';
+                Log::error('Webhook enable: Error enabling webhooks on store' . $store . ' with topic orders/paid - '. $e->getMessage());
+            }
+        } else {
+            $output['status'] = 'error';
+            $output['message'] = 'Webhook already activated.';
+        }
+        return $output;
     }
 
-    public function removeShopifyPaidOrderWebhook($store, $id)
+    /**
+     * @param $store
+     * @return array
+     */
+    public function removeShopifyPaidOrderWebhook($store)
     {
-        return $this->deleteShopifyWebhook($id, $this->getShopifyStoreConfig($store));
+        $output = [];
+        $webhooks = [];
+        try {
+            $webhooks = $this->getShopifyWebhooks($store);
+        } catch(\Exception $e) {
+            $output['status'] = 'error';
+            $output['message'] = 'Error retrieving current webhooks.';
+            Log::error('Webhook disable: Error getting webhooks on store' . $store . ' - '. $e->getMessage());
+        }
+
+        foreach($webhooks as $webhook) {
+            if (!empty($webhook['id']) && $webhook['topic'] == 'orders/paid') {
+                try {
+                    $output = array_merge($output,
+                        (array )$this->deleteShopifyWebhook($webhook['id'], $this->getShopifyStoreConfig($store))
+                    );
+                    $output['status'] = 'success';
+                    $output['message'] = 'Webhook deactivated successfully.';
+                    Log::info('Webhook disable: DISABLED webhook ' .  $webhook['id'] . ' on store ' .  $store . ' with topic ' . $webhook['topic'] . '.');
+                } catch(\Exception $e) {
+                    $output['status'] = 'error';
+                    $output['message'] = 'Error deactivating webhook.';
+                    Log::error('Webhook disable: Error disabling webhook ' .  $webhook['id'] . ' on store ' .  $store . ' with topic ' . $webhook['topic'] . ' - '. $e->getMessage());
+                }
+            }
+        }
+        return $output;
     }
 
+    /**
+     * @param $parameters
+     * @param $config
+     * @return array
+     */
     private function createShopifyWebhook($parameters, $config)
     {
         $response = [];
@@ -292,6 +424,11 @@ class FacebookEventImportController extends Controller
         return $response;
     }
 
+    /**
+     * @param $id
+     * @param $config
+     * @return array
+     */
     private function deleteShopifyWebhook($id, $config)
     {
         $response = [];
@@ -305,6 +442,10 @@ class FacebookEventImportController extends Controller
         return $response;
     }
 
+    /**
+     * @param $data
+     * @return Promise\PromiseInterface
+     */
     private function createAsyncRequest($data)
     {
         $async_request = (new EventRequestAsync(config('services.facebook.pixel_id')))
@@ -323,6 +464,10 @@ class FacebookEventImportController extends Controller
             );
     }
 
+    /**
+     * @param $events
+     * @return \FacebookAds\Object\ServerSide\EventResponse
+     */
     private function sendEvents($events)
     {
         $request = (new EventRequest(config('services.facebook.pixel_id')))
@@ -330,6 +475,10 @@ class FacebookEventImportController extends Controller
         return $request->execute();
     }
 
+    /**
+     * @param $data
+     * @return \FacebookAds\Object\ServerSide\EventResponse
+     */
     private function sendTestEvent($data)
     {
         $async_request = (new EventRequest(config('services.facebook.pixel_id')))
@@ -338,6 +487,9 @@ class FacebookEventImportController extends Controller
         return $async_request->execute();
     }
 
+    /**
+     * @param Request $request
+     */
     public function sendEvent(Request $request)
     {
         Api::init(null, null, config('services.facebook.access_token'), false);
@@ -346,6 +498,11 @@ class FacebookEventImportController extends Controller
         Log::info('FB event fired with data: ' . json_encode($request->all()). ' Response:' . $promise->getState());
     }
 
+    /**
+     * @param $ids
+     * @param $store
+     * @return array|mixed
+     */
     public function getShopifyOrdersByIds($ids, $store)
     {
         $parameters = [
@@ -357,6 +514,12 @@ class FacebookEventImportController extends Controller
         return $this->getPaginatedOrders($parameters, $this->getShopifyStoreConfig($store));
     }
 
+    /**
+     * @param $createdAtMin
+     * @param $createdAtMax
+     * @param $store
+     * @return array|mixed
+     */
     private function getShopifyOrdersByDateRange($createdAtMin, $createdAtMax, $store)
     {
         $parameters = [
@@ -369,6 +532,10 @@ class FacebookEventImportController extends Controller
         return $this->getPaginatedOrders($parameters, $this->getShopifyStoreConfig($store));
     }
 
+    /**
+     * @param $store
+     * @return array
+     */
     private function getShopifyStoreConfig($store): array
     {
         $config = [];
@@ -387,6 +554,12 @@ class FacebookEventImportController extends Controller
         return $config;
     }
 
+    /**
+     * @param $parameters
+     * @param $config
+     * @param array $orders
+     * @return array|mixed
+     */
     private function getPaginatedOrders($parameters, $config, $orders = [])
     {
         $url = 'admin/orders.json';
@@ -439,6 +612,10 @@ class FacebookEventImportController extends Controller
         return $orders;
     }
 
+    /**
+     * @param $order
+     * @return array
+     */
     private function mapShopifyOrderToEventData($order): array
     {
         $data = [];
@@ -473,6 +650,10 @@ class FacebookEventImportController extends Controller
         return $data;
     }
 
+    /**
+     * @param $data
+     * @return array
+     */
     private function createEvents($data): array
     {
         $ip = $_SERVER['REMOTE_ADDR'];
@@ -514,12 +695,14 @@ class FacebookEventImportController extends Controller
                 ->setCurrency($data['currency'])
                 ->setValue($data['value']);
 
+            /*
+             * Custom data contents not optimal for processing
             if (!empty($data['contents'])) {
-                /*if (is_array($data['contents'])) {
+                if (is_array($data['contents'])) {
                     $data['contents'] = json_encode($data['contents']);
-                }*/
-                //$custom_data->setContents($data['contents']);
-            }
+                }
+                $custom_data->setContents($data['contents']);
+            }*/
 
             $event->setCustomData($custom_data);
         }
@@ -530,6 +713,10 @@ class FacebookEventImportController extends Controller
         return array($event);
     }
 
+    /**
+     * @param $lineItems
+     * @return array
+     */
     private function getCustomDataStringFromLineItems($lineItems)
     {
         //dd($lineItems);
