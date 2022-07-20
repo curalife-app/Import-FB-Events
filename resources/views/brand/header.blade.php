@@ -1,4 +1,9 @@
 @push('head')
+
+    @if (parse_url(config('app.url'), PHP_URL_SCHEME) != 'https')
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    @endif
+
     <link
         href="/favicon.png"
         id="favicon"

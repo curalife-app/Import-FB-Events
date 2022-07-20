@@ -21,7 +21,7 @@ return [
     |
     | Define how many items to receive in one Shopify request.
     |
-    | Maximum number of items allowed by Shopify: 1000
+    | Maximum number of items allowed by Shopify: 250
     |
     */
 
