@@ -256,6 +256,8 @@ class FacebookEventImportController extends Controller
                     }
                     Log::info("Async event import processed. Total requests: " . sizeof($responseAsync));
                 }
+            } elseif (!empty($excluded)) {
+                Log::info('Event import call found no events to import. Total events excluded: ' . sizeof($excluded) );
             }
         }
 
