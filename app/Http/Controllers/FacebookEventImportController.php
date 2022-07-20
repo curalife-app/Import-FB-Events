@@ -62,14 +62,6 @@ class FacebookEventImportController extends Controller
     }
 
     /**
-     * @param $store
-     */
-    public function enableWebhooks($store)
-    {
-
-    }
-
-    /**
      * @param Request $request
      * @return array|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
      */
