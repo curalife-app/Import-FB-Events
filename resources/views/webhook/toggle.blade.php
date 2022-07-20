@@ -34,7 +34,7 @@
                     <p class="small mt-2 mb-2">
                         <i>Note: Shopify requires SSL to be configured to be able to add webhooks.</i>
                     </p>
-                    @if (request()->getScheme() != 'https')
+                    @if (parse_url(config('app.url'), PHP_URL_SCHEME) != 'https')
                     <p class="small mt-2 mb-4 error">
                         SSL not configured. Webhooks are disabled.
                     </p>
@@ -56,7 +56,7 @@
                            title="Free switch" placeholder="Event for free"
                            id="field-webhooks-toggle"
                            @if ($webhook) checked="checked" @endif
-                           @if (request()->getScheme() != 'https') disabled="disabled" @endif
+                           @if (parse_url(config('app.url'), PHP_URL_SCHEME) != 'https') disabled="disabled" @endif
                     >
                     <!--label class="form-check-label" for="field-free-switch-ec71425b52b57dec421cef119aaa21bfb2789a0c">Event for free</label-->
                 </div>
