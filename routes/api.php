@@ -23,9 +23,8 @@ use App\Http\Controllers\FacebookEventImportController;
 Route::middleware('route.validate')->group(function () {
     Route::post('{store}/webhooks/order', [FacebookEventImportController::class, 'listenShopifyOrderWebhook']);
 
-    Route::get('{store}/webhooks/', [FacebookEventImportController::class, 'getShopifyWebhooks']);
-
     // Technical methods to check things manually
+    //Route::get('{store}/webhooks/', [FacebookEventImportController::class, 'getShopifyWebhooks']);
     //Route::get('{store}/webhooks/create', [FacebookEventImportController::class, 'addShopifyPaidOrderWebhook']);
     //Route::get('{store}/webhooks/delete/{id}', [FacebookEventImportController::class, 'removeShopifyPaidOrderWebhook']);
     //Route::get('{store}/webhooks/order', [FacebookEventImportController::class, 'listenShopifyOrderWebhook']);
